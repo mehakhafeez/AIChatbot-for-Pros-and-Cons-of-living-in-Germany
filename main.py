@@ -1,4 +1,7 @@
-# yt_transcript_agent.py
+"""
+This script fetches YouTube video transcripts, embeds them using OpenAI embeddings,
+and uploads them to Pinecone for similarity search and retrieval.
+"""
 
 import os
 import time
@@ -6,27 +9,27 @@ from getpass import getpass
 from youtube_transcript_api import YouTubeTranscriptApi
 from dotenv import load_dotenv, find_dotenv
 from tqdm.auto import tqdm
-from sklearn.metrics import accuracy_score, precision_score, f1_score
 
 from langchain.embeddings.openai import OpenAIEmbeddings
 from pinecone import Pinecone, ServerlessSpec
 
+# Grouping langchain imports together
 from langchain.vectorstores import Pinecone as PineconeVectorStore
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.chains import RetrievalQA
 from langchain.agents import Tool, initialize_agent
 
-def get_video_transcript(video_id):
+def get_video_transcript(vid_id):
     """
     Fetch transcript for a given YouTube video ID.
     """
     try:
-        transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_data = YouTubeTranscriptApi.get_transcript(vid_id)
         transcript_text = " ".join([item['text'] for item in transcript_data if 'text' in item])
         return transcript_text
     except Exception as e:
-        print(f"Error retrieving transcript for video {video_id}: {e}")
+        print(f"Error retrieving transcript for video {vid_id}: {e}")
         return None
 
 # Example usage with a list of video IDs
@@ -183,3 +186,5 @@ agent("what is the topic of the videos?")
 agent("can you tell me some facts about living in Germany?")
 
 agent("can you summarize these facts in two short sentences")
+
+agent("can you explain what immigrants faces in germany?")
