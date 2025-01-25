@@ -1,26 +1,29 @@
 # yt_transcript_agent.py
 
+import os
+import time
+from getpass import getpass
 from youtube_transcript_api import YouTubeTranscriptApi
 from dotenv import load_dotenv, find_dotenv
-from getpass import getpass
+from tqdm.auto import tqdm
+from sklearn.metrics import accuracy_score, precision_score, f1_score
+
 from langchain.embeddings.openai import OpenAIEmbeddings
 from pinecone import Pinecone, ServerlessSpec
-from tqdm.auto import tqdm
-from langchain.vectorstores import Pinecone
+
+from langchain.vectorstores import Pinecone as PineconeVectorStore
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.chains import RetrievalQA
 from langchain.agents import Tool, initialize_agent
-import os
-import time
 
 def get_video_transcript(video_id):
     """
     Fetch transcript for a given YouTube video ID.
     """
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        transcript_text = " ".join([item['text'] for item in transcript if 'text' in item])
+        transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_text = " ".join([item['text'] for item in transcript_data if 'text' in item])
         return transcript_text
     except Exception as e:
         print(f"Error retrieving transcript for video {video_id}: {e}")
@@ -31,12 +34,12 @@ video_ids = ['2u4ItZerRac', 'I2zF1I60hPg', '8xqSF-uHCUs', 'LtmS-c1pChY', 'sJNxT-
 transcripts = {}
 
 # Fetch the transcript for each video
-for video_id in video_ids:
-    transcript = get_video_transcript(video_id)
-    if transcript:
-        transcripts[video_id] = transcript
+for vid_id in video_ids:
+    trans = get_video_transcript(vid_id)
+    if trans:
+        transcripts[vid_id] = trans
     else:
-        print(f"No transcript available for video {video_id}")
+        print(f"No transcript available for video {vid_id}")
 
 # Display the fetched transcripts
 for video_id, transcript in transcripts.items():
@@ -51,11 +54,11 @@ PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 # Get API key for OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or getpass("Enter your OpenAI API key: ")
-model_name = 'text-embedding-ada-002'
+MODEL_NAME = 'text-embedding-ada-002'
 
 # Initialize OpenAI Embeddings
 embed = OpenAIEmbeddings(
-    model=model_name,
+    model=MODEL_NAME,
     openai_api_key=OPENAI_API_KEY
 )
 
@@ -68,36 +71,36 @@ pc = Pinecone(api_key=api_key)
 # Define serverless specification
 spec = ServerlessSpec(cloud="aws", region="us-east-1")
 
-index_name = "langchain-retrieval-agent"
+INDEX_NAME = "langchain-retrieval-agent"
 existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
 
 # Check if index already exists (it shouldn't if this is first time)
-if index_name not in existing_indexes:
+if INDEX_NAME not in existing_indexes:
     # If does not exist, create index
     pc.create_index(
-        index_name,
+        INDEX_NAME,
         dimension=1536,  # Dimensionality of ada 002
         metric='dotproduct',
         spec=spec
     )
     # Wait for index to be initialized
-    while not pc.describe_index(index_name).status['ready']:
+    while not pc.describe_index(INDEX_NAME).status['ready']:
         time.sleep(1)
 
 # Connect to index
-index = pc.Index(index_name)
+index = pc.Index(INDEX_NAME)
 time.sleep(1)
 # View index stats
 index.describe_index_stats()
 
-batch_size = 100
+BATCH_SIZE = 100
 
 # Prepare data for upload to Pinecone
 data = [{'title': video_id, 'context': transcript, 'id': video_id} for video_id, transcript in transcripts.items()]
 
-for i in tqdm(range(0, len(data), batch_size)):
+for i in tqdm(range(0, len(data), BATCH_SIZE)):
     # Get end of batch
-    i_end = min(len(data), i + batch_size)
+    i_end = min(len(data), i + BATCH_SIZE)
     batch = data[i:i_end]
     # First get metadata fields for this batch
     metadatas = [{'title': record['title'], 'text': record['context']} for record in batch]
@@ -112,18 +115,18 @@ for i in tqdm(range(0, len(data), batch_size)):
 
 index.describe_index_stats()
 
-text_field = "text"  # The metadata field that contains our text
+TEXT_FIELD = "text"  # The metadata field that contains our text
 
 # Initialize the vector store object
-vectorstore = Pinecone(
-    index, embed.embed_query, text_field
+vectorstore = PineconeVectorStore(
+    index, embed.embed_query, TEXT_FIELD
 )
 
-query = "what are the pros and cons of living in Germany?"
+QUERY = "what are the pros and cons of living in Germany?"
 
 # Perform similarity search
 vectorstore.similarity_search(
-    query,  # Our search query
+    QUERY,  # Our search query
     k=3  # Return 3 most relevant docs
 )
 
@@ -148,7 +151,7 @@ qa = RetrievalQA.from_chain_type(
     retriever=vectorstore.as_retriever()
 )
 
-qa.run(query)
+qa.run(QUERY)
 
 tools = [
     Tool(
