@@ -128,8 +128,8 @@ iface = gr.Interface(
     fn=query_knowledge_base,
     inputs="text",
     outputs="text",
-    title="Knowledge Base Query",
-    description="Ask questions about the video transcripts."
+    title="AI ChatBot for Pros and Cons of Living in Germany",
+    description="Ask anything related to Living in Germany or some other General Knowledge Questions."
 )
 
 # Launch Gradio interface
