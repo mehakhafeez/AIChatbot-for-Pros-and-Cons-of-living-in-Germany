@@ -1,0 +1,8 @@
+openai
+pinecone-client
+langchain
+langchain-community
+tiktoken
+datasets
+youtube-transcript-api
+gradio
