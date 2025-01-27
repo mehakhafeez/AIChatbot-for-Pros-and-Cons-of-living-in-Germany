@@ -125,11 +125,11 @@ vectorstore = PineconeVectorStore(
     index, embed.embed_query, TEXT_FIELD
 )
 
-QUERY = "what are the pros and cons of living in Germany?"
+query = "what are the pros and cons of living in Germany?"
 
 # Perform similarity search
 vectorstore.similarity_search(
-    QUERY,  # Our search query
+    query,  # Our search query
     k=3  # Return 3 most relevant docs
 )
 
@@ -154,7 +154,7 @@ qa = RetrievalQA.from_chain_type(
     retriever=vectorstore.as_retriever()
 )
 
-qa.run(QUERY)
+qa.run(query)
 
 tools = [
     Tool(
