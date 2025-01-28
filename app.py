@@ -99,7 +99,6 @@ upload_to_pinecone(DATA)
 vectorstore = LangchainPinecone(
     index, embed.embed_query, "text"
 )
-
 # Initialize ChatOpenAI and RetrievalQA
 llm = ChatOpenAI(
     openai_api_key=OPENAI_API_KEY,
@@ -116,7 +115,6 @@ qa = RetrievalQA.from_chain_type(
     chain_type="stuff",
     retriever=vectorstore.as_retriever()
 )
-
 def query_knowledge_base(query):
     """
     Query the knowledge base using the provided query.
@@ -129,7 +127,7 @@ iface = gr.Interface(
     inputs="text",
     outputs="text",
     title="AI ChatBot for Pros and Cons of Living in Germany",
-    description="Ask anything related to Living in Germany or some other General Knowledge Questions."
+    description="Ask Qs related to Living in Germany or G-K Questions."
 )
 
 # Launch Gradio interface
