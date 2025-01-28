@@ -55,6 +55,11 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 HUGGINGFACEHUB_API_TOKEN = os.getenv('HUGGINGFACEHUB_API_TOKEN')
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_ENDPOINT"]="https://api.smith.langchain.com"
+os.environ["LANGCHAIN_PROJECT"]="Pros&Cons of living in Germany"
+LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
+
 # Get API key for OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or getpass("Enter your OpenAI API key: ")
 MODEL_NAME = 'text-embedding-ada-002'
