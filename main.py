@@ -184,8 +184,6 @@ agent = initialize_agent(
 
 agent(query)
 
-agent("what are the pros and cons of living in Germany?")
-
 agent("what is the topic of the videos?")
 
 agent("can you tell me some facts about living in Germany?")
