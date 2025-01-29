@@ -184,10 +184,43 @@ agent = initialize_agent(
 
 agent(query)
 
-agent("what is the topic of the videos?")
+#agent("what is the topic of the videos?")
 
-agent("can you tell me some facts about living in Germany?")
+#agent("can you tell me some facts about living in Germany?")
 
-agent("can you summarize these facts in two short sentences")
+#agent("can you summarize these facts in two short sentences")
 
-agent("can you explain what immigrants faces in germany?")
+#agent("can you explain what immigrants faces in germany?")
+
+import gradio as gr
+
+def chatbot_response(user_query):
+    """
+    Function to get response from the agent with dynamic retrieval.
+    """
+    try:
+        # Perform a similarity search to retrieve the most relevant context
+        retrieved_docs = vectorstore.similarity_search(user_query, k=3)
+
+        # Get response from the agent
+        response = agent.run(user_query)
+
+        # Debugging: Print retrieved documents (Optional)
+        print("Retrieved Docs:", [doc.page_content for doc in retrieved_docs])
+
+        return response
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Create Gradio interface
+iface = gr.Interface(
+    fn=chatbot_response,
+    inputs=gr.Textbox(lines=2, placeholder="Ask me about living in Germany..."),
+    outputs=gr.Textbox(),
+    title="AI Chatbot: Pros & Cons of Living in Germany",
+    description="This chatbot retrieves information about living in Germany by analyzing YouTube transcripts. Ask any question!",
+    theme="compact"
+)
+
+# Launch Gradio app
+iface.launch(share=True)
