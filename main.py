@@ -5,6 +5,7 @@ and uploads them to Pinecone for similarity search and retrieval.
 
 import os
 import time
+import gradio as gr
 from getpass import getpass
 from youtube_transcript_api import YouTubeTranscriptApi
 from dotenv import load_dotenv, find_dotenv
@@ -184,15 +185,12 @@ agent = initialize_agent(
 
 agent(query)
 
-#agent("what is the topic of the videos?")
+agent("can you tell me some facts about living in Germany?")
 
-#agent("can you tell me some facts about living in Germany?")
+agent("can you summarize these facts in two short sentences")
 
-#agent("can you summarize these facts in two short sentences")
+agent("can you explain what immigrants faces in germany?")
 
-#agent("can you explain what immigrants faces in germany?")
-
-import gradio as gr
 
 def chatbot_response(user_query):
     """
